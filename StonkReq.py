@@ -9,16 +9,20 @@ r = requests.get('https://www.alphavantage.co/query', params = payload)
 testing1 = json.loads(r.text)
 
 print('Open')
-opens = numpy.array([])
+opens = []
 for data in testing1['Time Series (Daily)'].values():
-	opens = numpy.array(opencloses.append(data['4. close'])
-	print(data['1. open'])
+	opens.append(data['1. open'])
+	print(data['1. open'])	
 
 print('Close')
-closes = numpy.array([])
+closes = []
 for data in testing1['Time Series (Daily)'].values():
 	closes.append(data['4. close'])
 	print(data['4. close'])
 
 difference = []
-difference = numpy.subtract(opens, closes)
+
+for i in range(len(opens)-1):
+	difference.append(float(opens[i]) - float(closes[i]))
+
+print(difference)
