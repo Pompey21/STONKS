@@ -35,3 +35,47 @@ class Reader:
                         'apikey'   : self.access_key }
 
             entry.add_data(json.loads(requests.get(url, params = payload).text))
+
+class CachedReader(Reader):
+    def __init__(self, key_file, entries, cache_file):
+        self.cache_file = cache_file
+        super().__init__(key_file, entries)
+
+
+    # FIXME: this function is expecting perfect input, figure out what should be accepted or not
+    def pull(self):
+        with open(self.cache_file, "r") as cache_contents: 
+            cache_text = cache_contents.read()
+            if len(cache_text) == 0:
+                return
+            
+            cache = json.loads(cache_text)
+            for entry in self.entries:
+                series_data = cache.get(entry.symbol).get('data')
+                if series_data is None:
+                    entry.add_data(series_data)
+                        
+
+    def fill_cache(self):
+        url = 'https://www.alphavantage.co/query'
+
+        cache = {}
+        for entry in self.entries:
+            payload = { 'function'   : 'TIME_SERIES_DAILY',
+                        'symbol'     : entry.symbol,
+                        'outputsize' : 'full',
+                        'apikey'     : self.access_key }
+
+            cache[entry.symbol] = {'name': entry.name,
+                                   'data': json.loads(requests.get(url, params = payload).text)}
+
+        with open(self.cache_file, "w") as cache_contents:
+            cache_contents.write(json.dumps(cache))
+
+    def cache_entries(self):
+        with open(self.cache_file, "r") as cache_contents:
+            cache_text = cache_contents.read()
+            cache = json.loads(cache_text) if len(cache_text) > 0 else {}
+            
+                
+            return [ Entry(data.get("name"), symbol) for symbol, data in cache.items() ]
