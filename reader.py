@@ -52,7 +52,7 @@ class CachedReader(Reader):
             cache = json.loads(cache_text)
             for entry in self.entries:
                 series_data = cache.get(entry.symbol).get('data')
-                if series_data is None:
+                if series_data is not None:
                     entry.add_data(series_data)
                         
 
